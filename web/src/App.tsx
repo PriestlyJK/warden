@@ -213,7 +213,7 @@ function App() {
   // pure, unit-tested predicate (hasReturnContent).
   const [returnedAfterAbsence, setReturnedAfterAbsence] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
-  const [externalViewMode, setExternalViewMode] = useState<'sessions' | 'activity' | 'directives' | null>(null);
+  const [externalViewMode, setExternalViewMode] = useState<'sessions' | 'activity' | 'directives' | 'attention' | null>(null);
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   // The past-conversation whose read-only transcript is open from a global-search
   // result (WARDEN-719). Lifted to App level — NOT inside GlobalSearchDialog —
@@ -1410,6 +1410,15 @@ function App() {
     setExternalViewMode('activity');
   }, []);
 
+  // WARDEN-880 — externalViewMode is a ONE-SHOT command ObserverTabs consumes after
+  // applying, then calls this to reset it to null. Without the reset, a 2nd
+  // openActivityTab() finds externalViewMode already 'activity' (React same-value
+  // bailout → no re-render → ObserverTabs' on-change effect never fires → the click
+  // is a silent no-op). null between deep-links also keeps manual tab switches from
+  // being yanked back. Stable identity (useCallback, []) so ObserverTabs' effect deps
+  // are stable and it does not re-run every App render.
+  const consumeExternalViewMode = useCallback(() => setExternalViewMode(null), []);
+
   // Focus a pane from global search / observer — routed through openChat so a
   // pane already open in another workspace switches there instead of duplicating.
   const handleFocusPane = useCallback((id: string) => {
@@ -1989,7 +1998,7 @@ function App() {
             title="Drag to resize observer panel"
           />
           <ErrorBoundary onError={(error, info) => forwardRendererError(error, info.componentStack)}>
-            <ObserverTabs externalViewMode={externalViewMode} focusedChat={focusedChat} onReconnectChat={handleReconnectChat} observerAutoStart={observerAutoStart} observerSessionTimeout={observerSessionTimeout} timestampFormat={timestampFormat} />
+            <ObserverTabs externalViewMode={externalViewMode} onExternalViewModeConsumed={consumeExternalViewMode} focusedChat={focusedChat} onReconnectChat={handleReconnectChat} observerAutoStart={observerAutoStart} observerSessionTimeout={observerSessionTimeout} timestampFormat={timestampFormat} attention={{ rollup: attentionRollup, onOpenChat: openChat, onOpenActivity: openActivityTab, attentionDesktopAlerts, mutedAlertKeys, snoozedAlertKeys, onSetAlertMute: setAlertMute, focusedPaneKey, snippets, onReplyResult: handleReplyResult }} />
           </ErrorBoundary>
         </section>
         <section className="border-l min-h-0 transition-all duration-200 ease-in-out overflow-hidden"
