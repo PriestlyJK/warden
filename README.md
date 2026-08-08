@@ -100,7 +100,7 @@ Stack: **Node.js** (backend: Express, ws, node-pty) + **React + TypeScript + Tai
 <p align="center">
   <a href="https://yatfa.com">
 
-<img width="600" alt="image" src="https://github.com/user-attachments/assets/7f15513a-cc36-489a-91c8-c9f80ae56a37" />
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/2f2e33b9-30bd-4fb1-95f5-4c838a94d1c8" />
 
   </a>
 </p>
